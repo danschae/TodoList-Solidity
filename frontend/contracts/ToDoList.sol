@@ -1,5 +1,5 @@
-pragma solidity ^0.5.2;
-pragma experimental ABIEncoderV2;
+// SPDX-License-Identifier: RANDOM_TEXT
+pragma solidity ^0.8.5;
 
 contract ToDoList {
 
@@ -10,17 +10,18 @@ contract ToDoList {
     }
     
     uint nextId;
-    bool[] public array_of_bools;
     mapping(address => mapping(uint => ToDo)) public todos;
     mapping(address => uint) public amount;
     mapping(address => uint[]) public ids;
     mapping(address => string[]) public tasks;
+    mapping(address => bool[]) public bools;
 
     
     function createToDo(string calldata task) external {
         todos[msg.sender][nextId] = ToDo(nextId, task, false);
         ids[msg.sender].push(nextId);
         tasks[msg.sender].push(task);
+        bools[msg.sender].push(false);
         nextId++;
     }
     
@@ -32,6 +33,17 @@ contract ToDoList {
         } else {
             todos[msg.sender][id].status = false;
         }
+        uint[] memory array_of_ids = ids[msg.sender];
+        for (uint i = 0; i < array_of_ids.length; i++) {
+            if (ids[msg.sender][i] == id) {
+                if (bools[msg.sender][i] == true) {
+                    bools[msg.sender][i] = false;
+                } else {
+                    bools[msg.sender][i] = true;
+                }
+                return;
+            }
+        }
     }
     
     function deposit() payable public {
@@ -39,7 +51,7 @@ contract ToDoList {
         amount[msg.sender] += msg.value;
     }
     
-    function withdraw() payable public {
+    function withdraw() public {
         require(amount[msg.sender] > 0, 'can withdraw if you have a balance');
         uint[] memory array_of_ids = ids[msg.sender];
         bool validate = true;
@@ -49,20 +61,13 @@ contract ToDoList {
             }
         }
         require(validate == true, 'You still have incomplete tasks');
-        address payable receiver = msg.sender;
-        receiver.transfer(amount[msg.sender]);
+        payable(msg.sender).transfer(amount[msg.sender]);
         amount[msg.sender] = 0;
         return;
     }
     
-    function getTodos() external returns(uint[] memory, string[] memory, bool[] memory) {
-        uint[] memory array_of_ids = ids[msg.sender];
-        for (uint i = 0; i < array_of_ids.length; i++) {
-            array_of_bools.push(todos[msg.sender][ids[msg.sender][i]].status);
-        }
-        bool[] memory new_array_of_bools = array_of_bools;
-        delete array_of_bools;
-        return (ids[msg.sender], tasks[msg.sender], new_array_of_bools);
+    function getTodos() public view returns(uint[] memory, string[] memory, bool[] memory) {
+        return (ids[msg.sender], tasks[msg.sender], bools[msg.sender]);
     }
     
    function getBalance() view public returns(uint) {
