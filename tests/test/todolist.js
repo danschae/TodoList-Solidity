@@ -28,8 +28,9 @@ contract('ToDoList', (accounts) => {
     it('can deposit money', async () => {
         await toDoList.deposit({from: account1, value: 100});
         await toDoList.deposit({from: account2, value: 200});
-        const balance = await toDoList.getBalance();
-        assert(balance == 300);
+        const balance1 = await toDoList.getBalance({from: account1});
+        const balance2 = await toDoList.getBalance({from: account2});
+        assert((balance1 + balance2) == 300);
     })
 
     it('cannot deposit money twice if balance is not 0', async () => {
@@ -54,14 +55,14 @@ contract('ToDoList', (accounts) => {
 
     it('can withdraw if status for all tasks is true', async () => {
         await toDoList.withdraw()
-        const balance = await toDoList.getBalance();
-        assert(balance.toNumber() === 200);
+        const balance = await toDoList.getBalance({from:account11});
+        assert(balance.toNumber() === 0);
     });
 
     it('can withdraw again if balance for individual account is back to 0', async () => {
         await toDoList.deposit({from: account1, value: 100});
         const balance = await toDoList.getBalance();
-        assert(balance == 300);
+        assert(balance == 100);
     });
 
     it('can fetch todos', async () => {

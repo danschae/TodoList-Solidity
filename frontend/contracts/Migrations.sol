@@ -1,4 +1,5 @@
-pragma solidity ^0.5.0;
+// SPDX-License-Identifier: RANDOM_TEXT
+pragma solidity ^0.8.5;
 
 contract Migrations {
   address public owner;

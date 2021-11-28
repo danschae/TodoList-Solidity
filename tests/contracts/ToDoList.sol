@@ -72,6 +72,6 @@ contract ToDoList {
     }
     
    function getBalance() view public returns(uint) {
-        return address(this).balance;
+        return amount[msg.sender];
     }
 }
